@@ -1,0 +1,15 @@
+{% extends 'myapp/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Confirmation</p>
+        <h1>{{ title }}</h1>
+    </div>
+</div>
+<form method="post" class="form-panel confirm-panel">{% csrf_token %}<p>Delete <strong>{{ object }}</strong>? This
+        cannot be undone.</p>
+    <div class="form-actions"><button class="button button-danger" type="submit">Delete</button><a
+            class="button button-quiet" href="javascript:history.back()">Cancel</a></div>
+</form>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'myapp/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Catalog / Item types</p>
+        <h1>{{ title }}</h1>
+    </div><a class="text-link" href="{% url 'item_type_list' %}">Back to item types</a>
+</div>
+<form method="post" class="form-panel">{% csrf_token %}{{ form.non_field_errors }}
+    {% for field in form %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}
+    <div class="form-actions"><button class="button" type="submit">Save type</button><a class="button button-quiet"
+            href="{% url 'item_type_list' %}">Cancel</a></div>
+</form>
+{% endblock %}

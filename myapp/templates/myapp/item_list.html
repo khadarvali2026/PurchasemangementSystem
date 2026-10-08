@@ -1,0 +1,43 @@
+{% extends 'myapp/base.html' %}
+{% block title %}Items{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Catalog</p>
+        <h1>Items</h1>
+        <p class="muted">Manage item details, availability, and on-hand stock.</p>
+    </div><a class="button" href="{% url 'item_create' %}">Add item <span aria-hidden="true">+</span></a>
+</div>
+<div class="toolbar"><span>{{ items|length }} item{{ items|length|pluralize }}</span><a
+        href="{% url 'item_type_list' %}">Manage item types</a></div>
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Type</th>
+                <th>Unit price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}<tr>
+                <td><a class="strong-link" href="{% url 'item_update' item.pk %}">{{ item.name }}</a><small>{{ item.sku
+                        }}</small></td>
+                <td>{{ item.item_type.name }}</td>
+                <td>${{ item.unit_price|floatformat:2 }}</td>
+                <td>{{ item.stock }}</td>
+                <td><span class="status {% if item.is_active %}status-active{% else %}status-inactive{% endif %}">{{
+                        item.is_active|yesno:'Active,Inactive' }}</span></td>
+                <td class="row-actions"><a href="{% url 'item_update' item.pk %}">Edit</a><a
+                        href="{% url 'item_delete' item.pk %}">Delete</a></td>
+            </tr>
+            {% empty %}<tr>
+                <td colspan="6" class="empty-state">No items yet. Add an item to start tracking inventory.</td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

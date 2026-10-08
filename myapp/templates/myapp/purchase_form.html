@@ -1,0 +1,61 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Purchasing / Purchase</p>
+        <h1>{{ title }}</h1>
+        <p class="muted">Stock is checked and updated as one transaction.</p>
+    </div>
+    <a class="text-link" href="{% url 'purchase_list' %}">Back to history</a>
+</div>
+<form method="post" class="purchase-form">
+    {% csrf_token %}
+    <p class="form-alert">{{ stock_error }}</p>
+    {{ form.non_field_errors }}
+    {% for field in form %}
+    <div class="field customer-field">
+        {{ field.label_tag }}{{ field }}{{ field.errors }}
+    </div>
+    {% endfor %}
+    <section class="lines-panel">
+        <div class="section-heading">
+            <div>
+                <h2>Purchase items</h2>
+                <p class="muted">Choose active catalog items and quantities.</p>
+            </div>
+            <button type="button" class="button button-quiet button-small" id="add-line">Add line <span
+                    aria-hidden="true">+</span></button>
+        </div>
+        {{ formset.management_form }}
+        {{ formset.non_form_errors }}
+        <div class="line-header"><span>Item</span><span>Quantity</span><span>Remove</span></div>
+        <div id="line-forms">
+            {% for line_form in formset %}
+            <div class="line-form">
+                {{ line_form.id }}
+                <div class="field">{{ line_form.item }}{{ line_form.item.errors }}</div>
+                <div class="field">{{ line_form.quantity }}{{ line_form.quantity.errors }}</div>
+                <div class="field delete-field">{{ line_form.DELETE }}<label
+                        for="{{ line_form.DELETE.id_for_label }}">Remove</label></div>
+            </div>
+            {% endfor %}
+        </div>
+        <template id="empty-line">
+            <div class="line-form">
+                {{ formset.empty_form.id }}
+                <div class="field">{{ formset.empty_form.item }}</div>
+                <div class="field">{{ formset.empty_form.quantity }}</div>
+                <div class="field delete-field">{{ formset.empty_form.DELETE }}<label
+                        for="{{ formset.empty_form.DELETE.id_for_label }}">Remove</label></div>
+            </div>
+        </template>
+    </section>
+    <div class="form-actions">
+        <button class="button" type="submit">Save purchase</button>
+        <a class="button button-quiet" href="{% url 'purchase_list' %}">Cancel</a>
+    </div>
+</form>
+<script src="{% static 'myapp/purchase_form.js' %}" defer></script>
+{% endblock %}

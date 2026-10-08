@@ -1,0 +1,35 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Stockroom{% endblock %} | Stockroom</title>
+    <link rel="stylesheet" href="{% static 'myapp/style.css' %}">
+</head>
+
+<body>
+    <aside class="sidebar">
+        <a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark">S</span><span>Stockroom<small>Purchasing
+                    desk</small></span></a>
+        <nav aria-label="Main navigation">
+            <a href="{% url 'dashboard' %}">Overview</a>
+            <a href="{% url 'item_list' %}">Items</a>
+            <a href="{% url 'item_type_list' %}">Item types</a>
+            <a href="{% url 'purchase_list' %}">Purchases</a>
+        </nav>
+        <div class="sidebar-foot">Inventory control</div>
+    </aside>
+    <main class="main-content">
+        <header class="topbar"><span>Purchasing management</span><a class="button button-small"
+                href="{% url 'purchase_create' %}">New purchase <span aria-hidden="true">+</span></a></header>
+        {% if messages %}<div class="messages">{% for message in messages %}<p class="message {{ message.tags }}">{{
+                message }}</p>{% endfor %}</div>{% endif %}
+        <section class="page-content">
+            {% block content %}{% endblock %}
+        </section>
+    </main>
+</body>
+
+</html>

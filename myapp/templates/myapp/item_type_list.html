@@ -1,0 +1,35 @@
+{% extends 'myapp/base.html' %}
+{% block title %}Item types{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Catalog</p>
+        <h1>Item types</h1>
+        <p class="muted">Group related items for a clearer catalog.</p>
+    </div><a class="button" href="{% url 'item_type_create' %}">Add type <span aria-hidden="true">+</span></a>
+</div>
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Items</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for type in item_types %}<tr>
+                <td><a class="strong-link" href="{% url 'item_type_update' type.pk %}">{{ type.name }}</a></td>
+                <td>{{ type.description|default:'—' }}</td>
+                <td>{{ type.items.count }}</td>
+                <td class="row-actions"><a href="{% url 'item_type_update' type.pk %}">Edit</a><a
+                        href="{% url 'item_type_delete' type.pk %}">Delete</a></td>
+            </tr>
+            {% empty %}<tr>
+                <td colspan="4" class="empty-state">No item types created yet.</td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'myapp/base.html' %}
+{% block title %}Purchase history{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Purchasing</p>
+        <h1>Purchase history</h1>
+        <p class="muted">Every transaction remains available for review and correction.</p>
+    </div><a class="button" href="{% url 'purchase_create' %}">New purchase <span aria-hidden="true">+</span></a>
+</div>
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Purchase</th>
+                <th>Customer</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Recorded</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for purchase in purchases %}<tr>
+                <td><a class="strong-link" href="{% url 'purchase_update' purchase.pk %}">#{{ purchase.pk }}</a></td>
+                <td>{{ purchase.customer_name|default:'—' }}</td>
+                <td>{% for line in purchase.lines.all %}<span class="line-summary">{{ line.item.name }} × {{
+                        line.quantity }}</span>{% endfor %}</td>
+                <td><strong>${{ purchase.total|floatformat:2 }}</strong></td>
+                <td>{{ purchase.created_at|date:'M j, Y, g:i a' }}</td>
+                <td class="row-actions"><a href="{% url 'purchase_update' purchase.pk %}">Edit</a></td>
+            </tr>
+            {% empty %}<tr>
+                <td colspan="6" class="empty-state">No purchases have been recorded.</td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
