@@ -400,6 +400,11 @@ tbody tr:hover {
     color: #6b7471;
 }
 
+.status-low {
+    background: var(--rust-pale);
+    color: var(--rust);
+}
+
 .row-actions {
     text-align: right;
     white-space: nowrap;
@@ -710,5 +715,83 @@ ul.errorlist {
     .row-actions a {
         display: inline-block;
         margin-left: 7px;
+    }
+}
+
+.heading-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.purchase-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.purchase-meta span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.purchase-detail-table tfoot th {
+    border-top: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+    font-size: 13px;
+    text-transform: none;
+}
+
+.item-overview {
+    margin-bottom: 25px;
+}
+
+.item-facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    margin: 0;
+}
+
+.item-facts dt {
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.item-facts dd {
+    margin: 0;
+    font-weight: 700;
+}
+
+.item-description {
+    margin-top: 23px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+}
+
+.item-description h2 {
+    margin-bottom: 9px;
+    font: inherit;
+    font-weight: 700;
+}
+
+.item-description p {
+    margin: 0;
+    color: var(--muted);
+    white-space: pre-wrap;
+}
+
+.item-history {
+    margin-top: 22px;
+}
+
+@media (max-width: 620px) {
+    .item-facts {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 17px 12px;
     }
 }

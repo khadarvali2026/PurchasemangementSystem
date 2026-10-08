@@ -26,22 +26,36 @@
         <div class="section-heading">
             <h2>Recent purchases</h2><a href="{% url 'purchase_list' %}">View history</a>
         </div>
-        {% for purchase in recent_purchases %}<div class="activity-row">
-            <div><a class="strong-link" href="{% url 'purchase_update' purchase.pk %}">Purchase #{{ purchase.pk
-                    }}</a><small>{% if purchase.customer_name %}{{ purchase.customer_name }} · {% endif %}{{
-                    purchase.created_at|date:'M j, Y, g:i a' }}</small><small>{% for line in purchase.lines.all %}{{
-                    line.item.name }} × {{ line.quantity }}{% if not forloop.last %}, {% endif %}{% endfor %}</small>
-            </div><strong>${{ purchase.total|floatformat:2 }}</strong>
+        {% for purchase in recent_purchases %}
+        <div class="activity-row">
+            <div>
+                <a class="strong-link" href="{% url 'purchase_detail' purchase.pk %}">{{ purchase.order_number }}</a>
+                <small>
+                    {% if purchase.customer_name %}{{ purchase.customer_name }} · {% endif %}
+                    {{ purchase.created_at|date:'M j, Y, g:i a' }}
+                </small>
+                <small>
+                    {% for line in purchase.lines.all %}
+                    {{ line.item.name }} × {{ line.quantity }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </small>
+            </div>
+            <strong>${{ purchase.total|floatformat:2 }}</strong>
         </div>
-        {% empty %}<p class="empty-state">No purchases recorded yet.</p>{% endfor %}
+        {% empty %}
+        <p class="empty-state">No purchases recorded yet.</p>
+        {% endfor %}
     </section>
     <section class="section-panel stock-panel">
         <div class="section-heading">
             <h2>Running low</h2><a href="{% url 'item_list' %}">All items</a>
         </div>
         {% for item in low_stock_items %}<div class="stock-row">
-            <div><a class="strong-link" href="{% url 'item_update' item.pk %}">{{ item.name }}</a><small>{{ item.sku
-                    }}</small></div><span class="stock-count">{{ item.stock }} left</span>
+            <div>
+                <a class="strong-link" href="{% url 'item_update' item.pk %}">{{ item.name }}</a>
+                <small>{{ item.sku }}</small>
+            </div>
+            <span class="stock-count">{{ item.stock }} left</span>
         </div>
         {% empty %}<p class="empty-state">No active items at or below five units.</p>{% endfor %}
     </section>

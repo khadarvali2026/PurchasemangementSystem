@@ -2,7 +2,8 @@ from collections import defaultdict
 
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Exists, OuterRef, Prefetch
+from django.db.models.deletion import ProtectedError
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import ItemForm, ItemTypeForm, PurchaseForm, PurchaseItemFormSet
@@ -21,8 +22,28 @@ def dashboard(request):
 
 
 def item_list(request):
-	items = Item.objects.select_related('item_type').all()
+	items = Item.objects.select_related('item_type').annotate(
+		has_purchase_history=Exists(PurchaseItem.objects.filter(item_id=OuterRef('pk'))),
+	)
 	return render(request, 'myapp/item_list.html', {'items': items})
+
+
+def item_detail(request, pk):
+	item = get_object_or_404(
+		Item.objects.select_related('item_type').prefetch_related(
+			Prefetch(
+				'purchase_lines',
+				queryset=PurchaseItem.objects.select_related('purchase').order_by('-purchase__created_at'),
+			),
+		),
+		pk=pk,
+	)
+	purchase_lines = list(item.purchase_lines.all())
+	return render(request, 'myapp/item_detail.html', {
+		'item': item,
+		'purchase_lines': purchase_lines,
+		'has_purchase_history': bool(purchase_lines),
+	})
 
 
 def item_create(request):
@@ -45,14 +66,24 @@ def item_update(request, pk):
 
 
 def item_delete(request, pk):
-	item = get_object_or_404(Item, pk=pk)
 	if request.method == 'POST':
-		if item.purchase_lines.exists():
-			messages.error(request, 'This item has purchase history and cannot be deleted. Deactivate it instead.')
-		else:
-			item.delete()
-			messages.success(request, 'Item deleted.')
+		try:
+			with transaction.atomic():
+				item = get_object_or_404(Item.objects.select_for_update(), pk=pk)
+				if item.purchase_lines.exists():
+					messages.error(request, 'This item has purchase history and cannot be deleted. Deactivate it instead.')
+					return redirect('item_detail', pk=item.pk)
+				item.delete()
+		except ProtectedError:
+			messages.error(request, 'This item is protected by purchase history and cannot be deleted. Deactivate it instead.')
+			return redirect('item_detail', pk=pk)
+		messages.success(request, 'Item deleted.')
 		return redirect('item_list')
+
+	item = get_object_or_404(Item, pk=pk)
+	if item.purchase_lines.exists():
+		messages.error(request, 'This item has purchase history and cannot be deleted. Deactivate it instead.')
+		return redirect('item_detail', pk=item.pk)
 	return render(request, 'myapp/confirm_delete.html', {'object': item, 'title': 'Delete item'})
 
 
@@ -97,6 +128,14 @@ def purchase_list(request):
 	return render(request, 'myapp/purchase_list.html', {'purchases': purchases})
 
 
+def purchase_detail(request, pk):
+	purchase = get_object_or_404(
+		Purchase.objects.prefetch_related('lines__item__item_type'),
+		pk=pk,
+	)
+	return render(request, 'myapp/purchase_detail.html', {'purchase': purchase})
+
+
 def _purchase_forms(request, purchase=None):
 	form = PurchaseForm(request.POST or None, instance=purchase)
 	formset = PurchaseItemFormSet(request.POST or None, instance=purchase, prefix='lines')
@@ -138,8 +177,8 @@ def purchase_create(request):
 					unit_price=item.unit_price,
 				)
 
-		messages.success(request, f'Purchase #{purchase.pk} recorded and stock updated.')
-		return redirect('purchase_list')
+		messages.success(request, f'{purchase.order_number} recorded and stock updated.')
+		return redirect('purchase_detail', pk=purchase.pk)
 	return render(request, 'myapp/purchase_form.html', {
 		'form': form, 'formset': formset, 'title': 'New purchase',
 	})
@@ -192,8 +231,8 @@ def purchase_update(request, pk):
 								original.unit_price for original in original_lines if original.pk == line.pk
 							)
 						line.save()
-					messages.success(request, f'Purchase #{purchase.pk} updated and stock reconciled.')
-					return redirect('purchase_list')
+					messages.success(request, f'{purchase.order_number} updated and stock reconciled.')
+					return redirect('purchase_detail', pk=purchase.pk)
 			else:
 				error = None
 
@@ -214,8 +253,8 @@ def _stock_error(desired, locked_items, previous=None):
 		item = locked_items.get(item_id)
 		if item is None:
 			return 'One of the selected items is no longer available.'
-		if not item.is_active and not previous.get(item_id):
-			return f'{item.name} is inactive and cannot be added to a purchase.'
+		if not item.is_active and quantity > previous.get(item_id, 0):
+			return f'{item.name} is inactive; its quantity cannot be increased.'
 		available = item.stock + previous.get(item_id, 0)
 		if quantity > available:
 			return f'Not enough stock for {item.name}. Available: {available}; requested: {quantity}.'

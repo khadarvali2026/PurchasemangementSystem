@@ -21,18 +21,33 @@
             </tr>
         </thead>
         <tbody>
-            {% for purchase in purchases %}<tr>
-                <td><a class="strong-link" href="{% url 'purchase_update' purchase.pk %}">#{{ purchase.pk }}</a></td>
+            {% for purchase in purchases %}
+            <tr>
+                <td>
+                    <a class="strong-link" href="{% url 'purchase_detail' purchase.pk %}">
+                        {{ purchase.order_number }}
+                    </a>
+                </td>
                 <td>{{ purchase.customer_name|default:'—' }}</td>
-                <td>{% for line in purchase.lines.all %}<span class="line-summary">{{ line.item.name }} × {{
-                        line.quantity }}</span>{% endfor %}</td>
+                <td>
+                    {% for line in purchase.lines.all %}
+                    <span class="line-summary">
+                        {{ line.item.name }} × {{ line.quantity }}
+                    </span>
+                    {% endfor %}
+                </td>
                 <td><strong>${{ purchase.total|floatformat:2 }}</strong></td>
                 <td>{{ purchase.created_at|date:'M j, Y, g:i a' }}</td>
-                <td class="row-actions"><a href="{% url 'purchase_update' purchase.pk %}">Edit</a></td>
+                <td class="row-actions">
+                    <a href="{% url 'purchase_detail' purchase.pk %}">Details</a>
+                    <a href="{% url 'purchase_update' purchase.pk %}">Edit</a>
+                </td>
             </tr>
-            {% empty %}<tr>
+            {% empty %}
+            <tr>
                 <td colspan="6" class="empty-state">No purchases have been recorded.</td>
-            </tr>{% endfor %}
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
 </div>

@@ -1,0 +1,105 @@
+{% extends 'myapp/base.html' %}
+{% block title %}{{ item.name }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Catalog / Items</p>
+        <h1>{{ item.name }}</h1>
+        <p class="muted">{{ item.sku }}</p>
+    </div>
+    <div class="heading-actions">
+        <a class="button button-quiet" href="{% url 'item_list' %}">Back to items</a>
+        <a class="button" href="{% url 'item_update' item.pk %}">Edit item</a>
+        {% if not has_purchase_history %}
+        <a class="button button-danger" href="{% url 'item_delete' item.pk %}">Delete item</a>
+        {% endif %}
+    </div>
+</div>
+<section class="section-panel item-overview">
+    <dl class="item-facts">
+        <div>
+            <dt>Item type</dt>
+            <dd>{{ item.item_type.name }}</dd>
+        </div>
+        <div>
+            <dt>Purchase date</dt>
+            <dd>{{ item.purchase_date|date:'M j, Y' }}</dd>
+        </div>
+        <div>
+            <dt>Unit price</dt>
+            <dd>${{ item.unit_price|floatformat:2 }}</dd>
+        </div>
+        <div>
+            <dt>Current stock</dt>
+            <dd>{{ item.stock }}</dd>
+        </div>
+        <div>
+            <dt>Availability</dt>
+            <dd>
+                {% if item.stock == 0 %}
+                <span class="status status-inactive">Out of Stock</span>
+                {% elif item.stock <= 5 %} <span class="status status-low">Low Stock</span>
+                    {% else %}
+                    <span class="status status-active">In Stock</span>
+                    {% endif %}
+            </dd>
+        </div>
+        <div>
+            <dt>Status</dt>
+            <dd>
+                {% if item.is_active %}
+                <span class="status status-active">Active</span>
+                {% else %}
+                <span class="status status-inactive">Inactive</span>
+                {% endif %}
+            </dd>
+        </div>
+    </dl>
+    {% if item.description %}
+    <div class="item-description">
+        <h2>Description</h2>
+        <p>{{ item.description }}</p>
+    </div>
+    {% endif %}
+</section>
+<section class="item-history">
+    <div class="section-heading">
+        <h2>Purchase history</h2>
+        {% if has_purchase_history %}
+        <span class="muted">This item cannot be deleted while history exists.</span>
+        {% endif %}
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Order</th>
+                    <th>Purchase date</th>
+                    <th>Quantity</th>
+                    <th>Unit price</th>
+                    <th>Line total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for line in purchase_lines %}
+                <tr>
+                    <td>
+                        <a class="strong-link" href="{% url 'purchase_detail' line.purchase.pk %}">
+                            {{ line.purchase.order_number }}
+                        </a>
+                    </td>
+                    <td>{{ line.purchase.created_at|date:'M j, Y, g:i a' }}</td>
+                    <td>{{ line.quantity }}</td>
+                    <td>${{ line.unit_price|floatformat:2 }}</td>
+                    <td>${{ line.line_total|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="empty-state">No purchase history for this item.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

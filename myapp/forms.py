@@ -14,10 +14,15 @@ class ItemTypeForm(forms.ModelForm):
 
 
 class ItemForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['stock'].label = 'Current stock' if self.instance.pk else 'Initial stock'
+
     class Meta:
         model = Item
-        fields = ['item_type', 'name', 'sku', 'description', 'unit_price', 'stock', 'is_active']
+        fields = ['item_type', 'name', 'sku', 'purchase_date', 'description', 'unit_price', 'stock', 'is_active']
         widgets = {
+            'purchase_date': forms.DateInput(attrs={'type': 'date'}),
             'description': forms.Textarea(attrs={'rows': 3}),
             'unit_price': forms.NumberInput(attrs={'min': '0', 'step': '0.01'}),
             'stock': forms.NumberInput(attrs={'min': '0', 'step': '1'}),
@@ -31,10 +36,14 @@ class PurchaseForm(forms.ModelForm):
 
 
 class PurchaseItemForm(forms.ModelForm):
+    quantity = forms.IntegerField(
+        min_value=1,
+        widget=forms.NumberInput(attrs={'min': '1', 'step': '1'}),
+    )
+
     class Meta:
         model = PurchaseItem
         fields = ['item', 'quantity']
-        widgets = {'quantity': forms.NumberInput(attrs={'min': '1', 'step': '1'})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -1,0 +1,67 @@
+{% extends 'myapp/base.html' %}
+{% block title %}{{ purchase.order_number }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Purchasing / History</p>
+        <h1>{{ purchase.order_number }}</h1>
+        <p class="muted">Purchase date:</p>
+        <strong>{{ purchase.created_at|date:'M j, Y, g:i a' }}</strong>
+    </div>
+    <div class="heading-actions">
+        <a class="button button-quiet" href="{% url 'purchase_list' %}">Back to history</a>
+        <a class="button" href="{% url 'purchase_update' purchase.pk %}">Edit purchase</a>
+    </div>
+</div>
+<section class="section-panel purchase-meta">
+    <span>Customer</span>
+    <strong>{{ purchase.customer_name|default:'Not specified' }}</strong>
+</section>
+<div class="table-wrap purchase-detail-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Item type</th>
+                <th>Quantity</th>
+                <th>Current stock</th>
+                <th>Unit price</th>
+                <th>Line total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in purchase.lines.all %}
+            <tr>
+                <td>
+                    <strong>{{ line.item.name }}</strong>
+                    <small>{{ line.item.sku }}</small>
+                </td>
+                <td>{{ line.item.item_type.name }}</td>
+                <td>{{ line.quantity }}</td>
+                <td>
+                    {{ line.item.stock }}
+                    {% if line.item.stock == 0 %}
+                    <span class="status status-inactive">Out of Stock</span>
+                    {% elif line.item.stock <= 5 %} <span class="status status-low">Low Stock</span>
+                        {% else %}
+                        <span class="status status-active">In Stock</span>
+                        {% endif %}
+                </td>
+                <td>${{ line.unit_price|floatformat:2 }}</td>
+                <td>${{ line.line_total|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="empty-state">This purchase has no item lines.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="5">Purchase total</th>
+                <th>${{ purchase.total|floatformat:2 }}</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+{% endblock %}

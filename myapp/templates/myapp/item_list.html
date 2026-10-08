@@ -16,27 +16,55 @@
             <tr>
                 <th>Item</th>
                 <th>Type</th>
+                <th>Purchase date</th>
                 <th>Unit price</th>
                 <th>Stock</th>
+                <th>Availability</th>
                 <th>Status</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-            {% for item in items %}<tr>
-                <td><a class="strong-link" href="{% url 'item_update' item.pk %}">{{ item.name }}</a><small>{{ item.sku
-                        }}</small></td>
+            {% for item in items %}
+            <tr>
+                <td>
+                    <a class="strong-link" href="{% url 'item_detail' item.pk %}">{{ item.name }}</a>
+                    <small>{{ item.sku }}</small>
+                </td>
                 <td>{{ item.item_type.name }}</td>
+                <td>{{ item.purchase_date|date:'M j, Y' }}</td>
                 <td>${{ item.unit_price|floatformat:2 }}</td>
                 <td>{{ item.stock }}</td>
-                <td><span class="status {% if item.is_active %}status-active{% else %}status-inactive{% endif %}">{{
-                        item.is_active|yesno:'Active,Inactive' }}</span></td>
-                <td class="row-actions"><a href="{% url 'item_update' item.pk %}">Edit</a><a
-                        href="{% url 'item_delete' item.pk %}">Delete</a></td>
+                <td>
+                    {% if item.stock == 0 %}
+                    <span class="status status-inactive">Out of Stock</span>
+                    {% elif item.stock <= 5 %} <span class="status status-low">Low Stock</span>
+                        {% else %}
+                        <span class="status status-active">In Stock</span>
+                        {% endif %}
+                </td>
+                <td>
+                    {% if item.is_active %}
+                    <span class="status status-active">Active</span>
+                    {% else %}
+                    <span class="status status-inactive">Inactive</span>
+                    {% endif %}
+                </td>
+                <td class="row-actions">
+                    <a href="{% url 'item_detail' item.pk %}">View</a>
+                    <a href="{% url 'item_update' item.pk %}">Edit</a>
+                    {% if item.has_purchase_history %}
+                    <span class="muted" title="Purchase history must be preserved">History</span>
+                    {% else %}
+                    <a href="{% url 'item_delete' item.pk %}">Delete</a>
+                    {% endif %}
+                </td>
             </tr>
-            {% empty %}<tr>
-                <td colspan="6" class="empty-state">No items yet. Add an item to start tracking inventory.</td>
-            </tr>{% endfor %}
+            {% empty %}
+            <tr>
+                <td colspan="8" class="empty-state">No items yet. Add an item to start tracking inventory.</td>
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
 </div>

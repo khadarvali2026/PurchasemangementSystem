@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Q
 from django.db.models.deletion import ProtectedError
+from django.utils import timezone
 
 
 class PurchaseQuerySet(models.QuerySet):
@@ -24,6 +25,7 @@ class Item(models.Model):
 	item_type = models.ForeignKey(ItemType, on_delete=models.PROTECT, related_name='items')
 	name = models.CharField(max_length=150)
 	sku = models.CharField(max_length=50, unique=True)
+	purchase_date = models.DateField(default=timezone.localdate)
 	description = models.TextField(blank=True)
 	unit_price = models.DecimalField(max_digits=10, decimal_places=2)
 	stock = models.PositiveIntegerField(default=0)
@@ -53,7 +55,11 @@ class Purchase(models.Model):
 		ordering = ['-created_at']
 
 	def __str__(self):
-		return f'Purchase #{self.pk}'
+		return self.order_number
+
+	@property
+	def order_number(self):
+		return f'PO-{self.pk:05d}'
 
 	@property
 	def total(self):
